@@ -1,0 +1,44 @@
+#opening the data from the location it was stored in
+x = read.csv( file.choose () )
+#observing the summary of the Raw data
+summary(x)
+#data cleaning
+x=replace ( x, x < 0, NA )
+x = x[ complete.cases ( x ) , ]
+summary(x) #observing the summary of the cleaned data
+#descriptive analysis
+summary ( x $ Age_of_Casualty )
+table( x $ Sex_of_Casualty )
+table( x $ Pedestrian_Location )
+table( x $ Casualty_Type )
+table( x $ Car_Passenger )
+table( x $ Bus_or_Coach_Passenger )
+table( x $ Casualty_Severity )
+#Data Visualization
+hist( x $ Age_of_Casualty , prob = T , col = ' red ' , xlab = ' Age ' , main = ' Histogram ' )
+boxplot( x $ Age_of_Casualty, ylab = ' Age ', main = ' Boxplot' )
+pie( table ( x $ Sex_of_Casualty ), main = ' Pie chart of Car Passenger ' )
+barplot( table ( x $ Car_Passenger ) , main = ' Bar diagram of Car Passenger ' , col = ’ blue ’ )
+pie( table ( x $ Casualty_Severity ) , main = ' Pie Chart of Casualty Severity ' )
+t = table ( x $ Sex_of_Casualty , x $ Casualty_Severity )
+barplot ( t , beside = T , legend = rownames(x$Sex_of_Casualty) , main = ' Clustered barplot of sex on different levels of Casualty severity ' )
+#Hypothesis testing to observe association between the categorical variables
+Casualty_Severity = as.factor( x $ Casualty_Severity ) # Transforming the numeric variable into factor variable
+Sex_of_Casualty = as.factor(x $ Sex_of_Casualty) #Transforming the numeric variable into factor variable
+chisq.test ( Casualty_Severity , Sex_of_Casualty ) 
+Casualty_Type  =  as.factor ( x $ Casualty_Type) # Transforming the numeric variable into factor variable
+chisq.test ( Sex_of_Casualty ,Casualty_Type )
+Bus_or_Coach_Passenger =  as.factor( x $ Bus_or_Coach_Passenger ) # Transforming the numeric variable into factor variable
+chisq.test(Casualty_Severity,Bus_or_Coach_Passenger)
+#Modelling
+library ( nnet )
+levels(Casualty_Severity)=list(Fatal="1",Serious="2",Slight="3")
+Casualty_Severity =relevel ( Casualty_Severity , ref= "Fatal" ) # making category 1/ Fatal the reference category for analysis
+levels( Sex_of_Casualty)= list(Male="1",Female="2")
+Sex_of_Casualty=relevel(Sex_of_Casualty, ref="Female") #creating reference variable of Female
+Age_of_Casualty = x $ Age_of_Casualty
+model = multinom ( Casualty_Severity ~ Sex_of_Casualty + Age_of_Casualty )
+summary( model )
+z = summary ( model ) $ coefficients / summary ( model ) $ standard.errors # calculation of test statistic value by diving the coefficients with the standard error
+p =(1-pnorm(abs(z)))*2
+p
